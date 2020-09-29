@@ -1,5 +1,5 @@
 # extractLattes
-**uma ferramenta de extração de informações do currículo lattes para geração de indicadores de pesquisa academica**
+**uma ferramenta de extração de informações do currículo lattes para geração de indicadores de atividades academicas e avaliação de programas academicos cadastrados na plataforma lattes**
 ## Requisitos
 
 * [Docker](https://docs.docker.com/get-docker/)
@@ -36,8 +36,9 @@ docker-compose run --rm scorelattes python scorerun.py
 
 ## TODO
 * Exportar para um arquivo Sqlite3 para gerar uma api em PHP com JSON
-* Adicionar geolocalização
+* Adicionar geolocalização da formação dos pesquisadores
 * Incluir outras extrações, como vínculos profissionais e projetos de extensão
+* Incluir recurso para avaliação de alunos de IC (PIBIC/PIBITI): Quantos entraram na pós, aumento de produção, etc...
 
 ## AGRADECIMENTOS
 
