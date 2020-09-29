@@ -40,4 +40,4 @@ docker-compose run --rm scorelattes python scorerun.py
 
 ## AGRADECIMENTOS
 
-Ao projeto do Prof. Vicente Helano (UFCA) [scoreLattes](https://github.com/vicentehelano/scoreLattes)
+Ao projeto do Prof. Vicente Helano (UFCA), desenvolvedor do projeto [scoreLattes](https://github.com/vicentehelano/scoreLattes)
