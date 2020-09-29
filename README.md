@@ -37,3 +37,7 @@ docker-compose run --rm scorelattes python scorerun.py
 ## TODO
 * Adicionar geolocalização
 * Incluir outras extrações, como vínculos profissionais e projetos de extensão
+
+## AGRADECIMENTOS
+
+Ao projeto do Prof. Vicente Helano (UFCA) [scoreLattes](https://github.com/vicentehelano/scoreLattes)
