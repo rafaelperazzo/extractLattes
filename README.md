@@ -30,7 +30,9 @@
 
 ## Como executar
 
-'docker-compose run --rm scorelattes python scorerun.py'
+```
+docker-compose run --rm scorelattes python scorerun.py
+```
 
 ## TODO
 * Adicionar geolocalização
