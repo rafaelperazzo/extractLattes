@@ -1,5 +1,5 @@
 # extractLattes
-**uma ferramenta de extração de informações do currículo lattes para geração de indicadores de atividades academicas e avaliação de programas academicos cadastrados na plataforma lattes**
+**uma ferramenta de extração de informações do currículo lattes para geração de indicadores e avaliação de programas acadêmicos**
 ## Requisitos
 
 * [Docker](https://docs.docker.com/get-docker/)
