@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+   scorelattes:
+     image: python3:scorelattes
+     build: .
+     volumes: 
+       - ./arquivos:/usr/src/app
+       - ../share:/share
+     restart: always
