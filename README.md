@@ -1,9 +1,9 @@
 # extractLattes
-**uma ferramenta de extração de informações do currículo lattes**
+**uma ferramenta de extração de informações do currículo lattes para geração de indicadores de pesquisa academica**
 ## Requisitos
 
-* Docker
-* Docker-compose
+* [Docker](https://docs.docker.com/get-docker/)
+* [Docker-compose](https://docs.docker.com/compose/install/)
 
 ## Entrada
 
@@ -35,6 +35,7 @@ docker-compose run --rm scorelattes python scorerun.py
 ```
 
 ## TODO
+* Exportar para um arquivo Sqlite3 para gerar uma api em PHP com JSON
 * Adicionar geolocalização
 * Incluir outras extrações, como vínculos profissionais e projetos de extensão
 
