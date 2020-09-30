@@ -118,7 +118,7 @@ class Score(object):
                 longitude = -39.3153336
                 logging.error(instituicao)
             time.sleep(1)
-            return((float(latitude),float(longitude)))
+            return((float(longitude),float(latitude)))
         else:
             return([0,0])
 
