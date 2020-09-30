@@ -35,6 +35,9 @@ import logging
 import pandas as pd
 import sqlite3
 import json
+import requests
+import time
+from geojson import MultiPoint
 
 WORKING_DIR='/usr/src/app/'
 CSV_DIR = WORKING_DIR + 'csv/'
@@ -43,7 +46,7 @@ config = configparser.ConfigParser()
 config.read(WORKING_DIR + 'config.ini')
 
 XML_DIR = WORKING_DIR + str(config['DEFAULT']['xml_dir'])
-logging.basicConfig(filename=WORKING_DIR + 'extractLattes.log', filemode='a', format='%(asctime)s %(name)s - %(levelname)s - %(message)s',level=logging.ERROR)
+logging.basicConfig(filename=WORKING_DIR + 'extractLattes.log', filemode='w', format='%(asctime)s %(name)s - %(levelname)s - %(message)s',level=logging.ERROR)
 
 def tituloConcluido(formacao,titulo):
     titulos = formacao.findall(titulo)
@@ -55,7 +58,7 @@ def tituloConcluido(formacao,titulo):
     return (2) #se o titulo estiver em andamento
 
 class Score(object):
-    """Pontuação do Currículo Lattes"""
+    
     def __init__(self, inicio, fim):
         # Período considerado para avaliação
         prefixo = str(config['DEFAULT']['prefixo'])
@@ -77,7 +80,7 @@ class Score(object):
         self.__codigoInstituicao = ''
         self.__ano_inicio = int(inicio)
         self.__ano_fim = int(fim)
-        
+        self.__localizacoes = []
         arquivos = [f for f in glob.glob(XML_DIR + "*.xml")]
         i = 0
         with progressbar.ProgressBar(max_value=len(arquivos)) as bar:
@@ -100,7 +103,25 @@ class Score(object):
                     i = i + 1
                     bar.update(i)
         
-        
+
+    def __getLatLon(self,instituicao):
+        continuar = str(config['DEFAULT']['localizacoes']).upper()
+        if (continuar=="SIM"):
+            requisicao = json.loads(requests.get("https://nominatim.openstreetmap.org/search.php?q=" + instituicao + "&format=json").text)
+            latitude = 0
+            longitude = 0
+            try:
+                latitude = requisicao[0]['lat']
+                longitude = requisicao[0]['lon']
+            except IndexError:
+                latitude = -7.2153453
+                longitude = -39.3153336
+                logging.error(instituicao)
+            time.sleep(1)
+            return((float(latitude),float(longitude)))
+        else:
+            return([0,0])
+
     def __dados_gerais(self):
         if 'NUMERO-IDENTIFICADOR' not in self.__curriculo.attrib:
             raise ValueError
@@ -143,21 +164,27 @@ class Score(object):
         for posdoutorado in posdoutorados:
             linha = ["POS-DOUTORADO",self.__nome_completo,posdoutorado.attrib['ANO-DE-INICIO'],posdoutorado.attrib['ANO-DE-CONCLUSAO'],posdoutorado.attrib['TITULO-DO-TRABALHO'],posdoutorado.attrib['NOME-INSTITUICAO'],"N/A"]
             self.__writerTitulos.writerow(linha)
+            self.__localizacoes.append(self.__getLatLon(posdoutorado.attrib['NOME-INSTITUICAO']))
         for doutorado in doutorados:
             linha = ["DOUTORADO",self.__nome_completo,doutorado.attrib['ANO-DE-INICIO'],doutorado.attrib['ANO-DE-CONCLUSAO'],doutorado.attrib['TITULO-DA-DISSERTACAO-TESE'],doutorado.attrib['NOME-INSTITUICAO'],doutorado.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
+            self.__localizacoes.append(self.__getLatLon(doutorado.attrib['NOME-INSTITUICAO']))
         for mestrado in mestrados:
             linha = ["MESTRADO ACADEMICO",self.__nome_completo,mestrado.attrib['ANO-DE-INICIO'],mestrado.attrib['ANO-DE-CONCLUSAO'],mestrado.attrib['TITULO-DA-DISSERTACAO-TESE'],mestrado.attrib['NOME-INSTITUICAO'],mestrado.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
+            self.__localizacoes.append(self.__getLatLon(mestrado.attrib['NOME-INSTITUICAO']))
         for mestrado_profissional in mestrados_profissional:
             linha = ["MESTRADO PROFISSIONAL",self.__nome_completo,mestrado_profissional.attrib['ANO-DE-INICIO'],mestrado_profissional.attrib['ANO-DE-CONCLUSAO'],mestrado_profissional.attrib['TITULO-DA-DISSERTACAO-TESE'],mestrado_profissional.attrib['NOME-INSTITUICAO'],mestrado_profissional.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
+            self.__localizacoes.append(self.__getLatLon(mestrado_profissional.attrib['NOME-INSTITUICAO']))
         for especializacao in especializacoes:
             linha = ["ESPECIALIZACAO",self.__nome_completo,especializacao.attrib['ANO-DE-INICIO'],especializacao.attrib['ANO-DE-CONCLUSAO'],especializacao.attrib['TITULO-DA-MONOGRAFIA'],especializacao.attrib['NOME-INSTITUICAO'],especializacao.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
+            self.__localizacoes.append(self.__getLatLon(especializacao.attrib['NOME-INSTITUICAO']))
         for graduacao in graduacoes:
             linha = ["GRADUACAO",self.__nome_completo,graduacao.attrib['ANO-DE-INICIO'],graduacao.attrib['ANO-DE-CONCLUSAO'],graduacao.attrib['TITULO-DO-TRABALHO-DE-CONCLUSAO-DE-CURSO'],graduacao.attrib['NOME-INSTITUICAO'],graduacao.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
+            self.__localizacoes.append(self.__getLatLon(graduacao.attrib['NOME-INSTITUICAO']))
         
         
     def __projetos_de_pesquisa(self):
@@ -353,17 +380,21 @@ class Score(object):
         conn.close()
 
     def __csv2ajax(self,arquivo,saida):
-        arquivo_csv = open(arquivo,'r')
-        linhas = csv.reader(arquivo_csv,delimiter=',')
-        dados = []
-        for linha in linhas:
-            dados.append(linha)
-        del dados[0]
-        ajax = {"data": dados}
-        arquivo_txt = open(saida,'w')
-        arquivo_txt.write(json.dumps(ajax))
-        arquivo_txt.close()
-        arquivo_csv.close()
+        try:
+            arquivo_csv = open(arquivo,'r')
+            arquivo_txt = open(saida,'w')
+            linhas = csv.reader(arquivo_csv,delimiter=',')
+            dados = []
+            for linha in linhas:
+                dados.append(linha)
+            del dados[0]
+            ajax = {"data": dados}
+            arquivo_txt.write(json.dumps(ajax))
+        except Exception as e:
+            logging.error(str(e))
+        finally:
+            arquivo_txt.close()
+            arquivo_csv.close()
 
     def exportar(self):
         prefixo = str(config['DEFAULT']['prefixo'])
@@ -376,11 +407,27 @@ class Score(object):
         self.__csv2ajax(CSV_DIR + prefixo + "titulacao.csv",CSV_DIR + prefixo + "titulacao.txt")
         self.__csv2ajax(CSV_DIR + prefixo + "titulos.csv",CSV_DIR + prefixo + "titulos.txt")
 
+    def salvarLocalizacoes(self):
+        prefixo = str(config['DEFAULT']['prefixo'])
+        continuar = str(config['DEFAULT']['localizacoes']).upper()
+        if (continuar=="SIM"):
+            try:
+                arquivo = open(CSV_DIR + prefixo + "localizacoes.txt",'w')
+                arquivo.write(str(MultiPoint(self.__localizacoes)))
+            except Exception as e:
+                logging.error("SalvarLocalizacoes: " + str(e))
+            finally:
+                arquivo.close()
+        
+
     def get_name(self):
         return self.__nome_completo
 
     def get_lattes_id(self):
         return self.__numero_identificador
+
+    def get_localizacoes(self):
+        return (self.__localizacoes)
 
 def main():
     inicio = int(config['DEFAULT']['inicio'])
@@ -388,6 +435,8 @@ def main():
     score = Score(inicio, fim)
     score.finalizar()
     score.exportar()
+    score.salvarLocalizacoes()
+    
     
 # Main
 if __name__ == "__main__":
