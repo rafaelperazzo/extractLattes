@@ -24,9 +24,10 @@
   * Em periódicos
   * Em anais
   * Livros e capítulos
- * Projetos de pesquisa
+ * Projetos de pesquisa, extensão, ensino e desenvolvimento
  * Titulação
  * Títulos
+* Banco de dados Sqlite3 com todas as informações acima
 
 ## Como executar
 
@@ -35,9 +36,8 @@ docker-compose run --rm scorelattes python scorerun.py
 ```
 
 ## TODO
-* Exportar para um arquivo Sqlite3 para gerar uma api em PHP com JSON
 * Adicionar geolocalização da formação dos pesquisadores
-* Incluir outras extrações, como vínculos profissionais e projetos de extensão
+* Incluir outras extrações, como vínculos profissionais
 * Incluir recurso para avaliação de alunos de IC (PIBIC/PIBITI): Quantos entraram na pós, aumento de produção, etc...
 
 ## AGRADECIMENTOS

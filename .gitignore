@@ -2,3 +2,5 @@
 *.log
 *.csv
 *.sh
+*.json
+*.txt

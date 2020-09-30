@@ -32,6 +32,9 @@ import glob
 import progressbar
 import configparser
 import logging
+import pandas as pd
+import sqlite3
+import json
 
 WORKING_DIR='/usr/src/app/'
 CSV_DIR = WORKING_DIR + 'csv/'
@@ -58,16 +61,10 @@ class Score(object):
         prefixo = str(config['DEFAULT']['prefixo'])
         self.__arquivo = open(CSV_DIR + prefixo + "producao.csv","w")
         self.__writer = csv.writer(self.__arquivo) #PRODUCAO
-        self.__writer.writerow(['tipo','ano','autor','idlattes','titulo','periodico','issn'])
+        self.__writer.writerow(['tipo','ano','autor','idlattes','titulo','local','identificador','natureza','abrangencia','editora'])
         self.__arquivoProjetos = open(CSV_DIR + prefixo + "projetos.csv","w")
         self.__writerProjetos = csv.writer(self.__arquivoProjetos) #projetos
-        self.__writerProjetos.writerow(['tipo','autor','idlattes','inicio','fim','titulo','graduacao','fomento'])
-        self.__arquivoEventos = open(CSV_DIR + prefixo + "eventos.csv","w")
-        self.__writerEventos = csv.writer(self.__arquivoEventos) #eventos
-        self.__writerEventos.writerow(['tipo','ano','autor','idlattes','titulo','natureza','abrangencia','evento','isbn','editora'])
-        self.__arquivoLivros = open(CSV_DIR + prefixo + "livros.csv","w")
-        self.__writerLivros = csv.writer(self.__arquivoLivros) #livros
-        self.__writerLivros.writerow(['tipo','ano','titulo','paginas','editora','isbn','titulo_livro'])
+        self.__writerProjetos.writerow(['tipo','natureza','autor','idlattes','inicio','fim','titulo','graduacao','fomento'])
         self.__arquivoTitulacao = open(CSV_DIR + prefixo + "titulacao.csv","w")
         self.__writerTitulacao = csv.writer(self.__arquivoTitulacao) #titulacao
         self.__writerTitulacao.writerow(['idlattes','nome','graduacao','especializacao','mestrado_profissional','mestrado','doutorado','posdoutorado'])
@@ -103,6 +100,7 @@ class Score(object):
                     i = i + 1
                     bar.update(i)
         
+        
     def __dados_gerais(self):
         if 'NUMERO-IDENTIFICADOR' not in self.__curriculo.attrib:
             raise ValueError
@@ -129,6 +127,7 @@ class Score(object):
         graduacao = tituloConcluido(formacao,'GRADUACAO')
         linha = [self.__numero_identificador,self.__nome_completo,graduacao,especializacao,mestrado_profissional,mestrado,doutorado,posdoutorado]
         self.__writerTitulacao.writerow(linha)
+        
         
     def __titulos_academicos(self):
         dados = self.__curriculo.find('DADOS-GERAIS')
@@ -159,6 +158,7 @@ class Score(object):
         for graduacao in graduacoes:
             linha = ["GRADUACAO",self.__nome_completo,graduacao.attrib['ANO-DE-INICIO'],graduacao.attrib['ANO-DE-CONCLUSAO'],graduacao.attrib['TITULO-DO-TRABALHO-DE-CONCLUSAO-DE-CURSO'],graduacao.attrib['NOME-INSTITUICAO'],graduacao.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
+        
         
     def __projetos_de_pesquisa(self):
         dados = self.__curriculo.find('DADOS-GERAIS')
@@ -243,9 +243,9 @@ class Score(object):
                         fomento = 0
                     else:
                         fomento = 1
-                    linha = ["PROJETO DE PESQUISA",self.__nome_completo,self.__numero_identificador,anoInicio,anoFim,nomeProjeto,estudantes,fomento]
+                    linha = ["PROJETO",natureza,self.__nome_completo,self.__numero_identificador,anoInicio,anoFim,nomeProjeto,estudantes,fomento]
                     self.__writerProjetos.writerow(linha)                    
-                        
+                     
 
     def __producao_bibliografica(self):
         producao = self.__curriculo.find('PRODUCAO-BIBLIOGRAFICA')
@@ -270,8 +270,9 @@ class Score(object):
             periodico = str(detalhamento.attrib['TITULO-DO-PERIODICO-OU-REVISTA'])
             issn = str(detalhamento.attrib['ISSN'])
             if (ano>=self.__ano_inicio) and (ano<=self.__ano_fim):
-                linha = ["PERIODICOS",ano,self.__nome_completo,self.__numero_identificador,titulo,periodico,issn]
+                linha = ["PERIODICOS",ano,self.__nome_completo,self.__numero_identificador,titulo,periodico,issn,"N/A","N/A","N/A"]
                 self.__writer.writerow(linha)
+        
             
     
     def __trabalhos_em_eventos(self, producao):
@@ -291,7 +292,8 @@ class Score(object):
             editora = str(str(trabalho.find('DETALHAMENTO-DO-TRABALHO').attrib['NOME-DA-EDITORA']))
             linha = ["ANAIS DE EVENTOS",ano,self.__nome_completo,self.__numero_identificador,titulo,natureza,abrangencia,evento,isbn,editora]
             
-            self.__writerEventos.writerow(linha)
+            self.__writer.writerow(linha)
+        
 
     def __livros_e_capitulos(self, producao):
         itens = producao.find('LIVROS-E-CAPITULOS')
@@ -315,7 +317,9 @@ class Score(object):
                     editora = str(livro.find('DETALHAMENTO-DO-LIVRO').attrib['NOME-DA-EDITORA'])
                     isbn = str(livro.find('DETALHAMENTO-DO-LIVRO').attrib['ISBN'])
                     linha = [tipo,ano,titulo,paginas,editora,isbn,"N/A"]
-                    self.__writerLivros.writerow(linha)
+                    linha = [tipo,ano,self.__nome_completo,self.__numero_identificador,titulo,"N/A",isbn,"N/A","N/A","N/A"]
+                    self.__writer.writerow(linha)
+            
 
 
         capitulos = itens.find('CAPITULOS-DE-LIVROS-PUBLICADOS')
@@ -332,7 +336,45 @@ class Score(object):
                 isbn = str(capitulo.find('DETALHAMENTO-DO-CAPITULO').attrib['ISBN'])
                 titulo_livro = str(capitulo.find('DETALHAMENTO-DO-CAPITULO').attrib['TITULO-DO-LIVRO'])
                 linha = [tipo,ano,titulo,paginas,editora,isbn,titulo_livro]
-                self.__writerLivros.writerow(linha)
+                linha = [tipo,ano,self.__nome_completo,self.__numero_identificador,titulo,titulo_livro,isbn,"N/A","N/A","N/A"]
+                self.__writer.writerow(linha)
+        
+
+    def finalizar(self):
+        self.__arquivo.close()
+        self.__arquivoProjetos.close()  
+        self.__arquivoTitulos.close()
+        self.__arquivoTitulacao.close()
+
+    def __csv2sqlite(self,arquivo,tabela):
+        df = pd.read_csv(arquivo)
+        conn = sqlite3.connect(CSV_DIR + 'extractLattes.sqlite3')
+        df.to_sql(tabela, conn, if_exists='replace', index = False)
+        conn.close()
+
+    def __csv2ajax(self,arquivo,saida):
+        arquivo_csv = open(arquivo,'r')
+        linhas = csv.reader(arquivo_csv,delimiter=',')
+        dados = []
+        for linha in linhas:
+            dados.append(linha)
+        del dados[0]
+        ajax = {"data": dados}
+        arquivo_txt = open(saida,'w')
+        arquivo_txt.write(json.dumps(ajax))
+        arquivo_txt.close()
+        arquivo_csv.close()
+
+    def exportar(self):
+        prefixo = str(config['DEFAULT']['prefixo'])
+        self.__csv2sqlite(CSV_DIR + prefixo + "producao.csv","producao")
+        self.__csv2sqlite(CSV_DIR + prefixo + "projetos.csv","projetos")
+        self.__csv2sqlite(CSV_DIR + prefixo + "titulacao.csv","titulacao")
+        self.__csv2sqlite(CSV_DIR + prefixo + "titulos.csv","titulos")
+        self.__csv2ajax(CSV_DIR + prefixo + "producao.csv",CSV_DIR + prefixo + "producao.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "projetos.csv",CSV_DIR + prefixo + "projetos.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "titulacao.csv",CSV_DIR + prefixo + "titulacao.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "titulos.csv",CSV_DIR + prefixo + "titulos.txt")
 
     def get_name(self):
         return self.__nome_completo
@@ -340,12 +382,12 @@ class Score(object):
     def get_lattes_id(self):
         return self.__numero_identificador
 
-    
-
 def main():
     inicio = int(config['DEFAULT']['inicio'])
     fim = int(config['DEFAULT']['fim'])
     score = Score(inicio, fim)
+    score.finalizar()
+    score.exportar()
     
 # Main
 if __name__ == "__main__":
