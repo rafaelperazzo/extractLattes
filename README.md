@@ -16,6 +16,7 @@
     fim = 2020
     prefixo = DOCENTES_
     xml_dir = xml/
+    localizacoes = SIM
 ```
 ## Saída
 
@@ -36,7 +37,6 @@ docker-compose run --rm scorelattes python scorerun.py
 ```
 
 ## TODO
-* Adicionar geolocalização da formação dos pesquisadores
 * Incluir outras extrações, como vínculos profissionais
 * Incluir recurso para avaliação de alunos de IC (PIBIC/PIBITI): Quantos entraram na pós, aumento de produção, etc...
 

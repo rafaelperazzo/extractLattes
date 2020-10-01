@@ -41,6 +41,7 @@ from geojson import MultiPoint
 
 WORKING_DIR='/usr/src/app/'
 CSV_DIR = WORKING_DIR + 'csv/'
+HTML_DIR = WORKING_DIR + 'html/'
 
 config = configparser.ConfigParser()
 config.read(WORKING_DIR + 'config.ini')
@@ -108,19 +109,14 @@ class Score(object):
         continuar = str(config['DEFAULT']['localizacoes']).upper()
         if (continuar=="SIM"):
             requisicao = json.loads(requests.get("https://nominatim.openstreetmap.org/search.php?q=" + instituicao + "&format=json").text)
-            latitude = 0
-            longitude = 0
+            time.sleep(1)
             try:
                 latitude = requisicao[0]['lat']
                 longitude = requisicao[0]['lon']
+                if (float(longitude),float(latitude)) not in self.__localizacoes:
+                    self.__localizacoes.append((float(longitude),float(latitude)))
             except IndexError:
-                latitude = -7.2153453
-                longitude = -39.3153336
-                logging.error(instituicao)
-            time.sleep(1)
-            return((float(longitude),float(latitude)))
-        else:
-            return([0,0])
+                logging.error(instituicao + " nao encontrada!")
 
     def __dados_gerais(self):
         if 'NUMERO-IDENTIFICADOR' not in self.__curriculo.attrib:
@@ -164,28 +160,27 @@ class Score(object):
         for posdoutorado in posdoutorados:
             linha = ["POS-DOUTORADO",self.__nome_completo,posdoutorado.attrib['ANO-DE-INICIO'],posdoutorado.attrib['ANO-DE-CONCLUSAO'],posdoutorado.attrib['TITULO-DO-TRABALHO'],posdoutorado.attrib['NOME-INSTITUICAO'],"N/A"]
             self.__writerTitulos.writerow(linha)
-            self.__localizacoes.append(self.__getLatLon(posdoutorado.attrib['NOME-INSTITUICAO']))
+            self.__getLatLon(posdoutorado.attrib['NOME-INSTITUICAO'])
         for doutorado in doutorados:
             linha = ["DOUTORADO",self.__nome_completo,doutorado.attrib['ANO-DE-INICIO'],doutorado.attrib['ANO-DE-CONCLUSAO'],doutorado.attrib['TITULO-DA-DISSERTACAO-TESE'],doutorado.attrib['NOME-INSTITUICAO'],doutorado.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
-            self.__localizacoes.append(self.__getLatLon(doutorado.attrib['NOME-INSTITUICAO']))
+            self.__getLatLon(doutorado.attrib['NOME-INSTITUICAO'])
         for mestrado in mestrados:
             linha = ["MESTRADO ACADEMICO",self.__nome_completo,mestrado.attrib['ANO-DE-INICIO'],mestrado.attrib['ANO-DE-CONCLUSAO'],mestrado.attrib['TITULO-DA-DISSERTACAO-TESE'],mestrado.attrib['NOME-INSTITUICAO'],mestrado.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
-            self.__localizacoes.append(self.__getLatLon(mestrado.attrib['NOME-INSTITUICAO']))
+            self.__getLatLon(mestrado.attrib['NOME-INSTITUICAO'])
         for mestrado_profissional in mestrados_profissional:
             linha = ["MESTRADO PROFISSIONAL",self.__nome_completo,mestrado_profissional.attrib['ANO-DE-INICIO'],mestrado_profissional.attrib['ANO-DE-CONCLUSAO'],mestrado_profissional.attrib['TITULO-DA-DISSERTACAO-TESE'],mestrado_profissional.attrib['NOME-INSTITUICAO'],mestrado_profissional.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
-            self.__localizacoes.append(self.__getLatLon(mestrado_profissional.attrib['NOME-INSTITUICAO']))
+            self.__getLatLon(mestrado_profissional.attrib['NOME-INSTITUICAO'])
         for especializacao in especializacoes:
             linha = ["ESPECIALIZACAO",self.__nome_completo,especializacao.attrib['ANO-DE-INICIO'],especializacao.attrib['ANO-DE-CONCLUSAO'],especializacao.attrib['TITULO-DA-MONOGRAFIA'],especializacao.attrib['NOME-INSTITUICAO'],especializacao.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
-            self.__localizacoes.append(self.__getLatLon(especializacao.attrib['NOME-INSTITUICAO']))
+            self.__getLatLon(especializacao.attrib['NOME-INSTITUICAO'])
         for graduacao in graduacoes:
             linha = ["GRADUACAO",self.__nome_completo,graduacao.attrib['ANO-DE-INICIO'],graduacao.attrib['ANO-DE-CONCLUSAO'],graduacao.attrib['TITULO-DO-TRABALHO-DE-CONCLUSAO-DE-CURSO'],graduacao.attrib['NOME-INSTITUICAO'],graduacao.attrib['STATUS-DO-CURSO']]
             self.__writerTitulos.writerow(linha)
-            self.__localizacoes.append(self.__getLatLon(graduacao.attrib['NOME-INSTITUICAO']))
-        
+            self.__getLatLon(graduacao.attrib['NOME-INSTITUICAO'])
         
     def __projetos_de_pesquisa(self):
         dados = self.__curriculo.find('DADOS-GERAIS')
@@ -412,7 +407,7 @@ class Score(object):
         continuar = str(config['DEFAULT']['localizacoes']).upper()
         if (continuar=="SIM"):
             try:
-                arquivo = open(CSV_DIR + prefixo + "localizacoes.txt",'w')
+                arquivo = open(HTML_DIR + prefixo + "geo.json",'w')
                 arquivo.write(str(MultiPoint(self.__localizacoes)))
             except Exception as e:
                 logging.error("SalvarLocalizacoes: " + str(e))
