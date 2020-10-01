@@ -9,3 +9,4 @@ RUN pip install geojson
 ENV TZ=America/Fortaleza
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+CMD [ "python", "./scorerun.py" ]
