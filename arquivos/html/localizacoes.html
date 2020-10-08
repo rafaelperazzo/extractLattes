@@ -11,6 +11,7 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
     <script src="leaflet.ajax.min.js"></script>
+    
 </head>
 
 <body>
@@ -18,12 +19,19 @@
     <div id="mapid" style="width: 600px; height: 400px;"></div>
     <script>
 
-        var mymap = L.map('mapid').setView([-7.25671375,-39.30363463853328], 10);
+        var mymap = L.map('mapid').setView([-7.25671375,-39.30363463853328], 2);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        /*L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);*/
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoicmFmYWVscGVyYXp6byIsImEiOiJja2cwcm41YTAwZmRhMzNtZHFuZ2J0eWlhIn0.G6nHD5z3fm8iGY_M86wTPw'
         }).addTo(mymap);
-        
         var geojsonLayer = new L.GeoJSON.AJAX("UFCA_geo.json"); //Modificar para o arquivo gerado!!
         geojsonLayer.addTo(mymap);
 
