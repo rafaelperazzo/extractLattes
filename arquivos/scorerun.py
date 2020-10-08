@@ -40,13 +40,13 @@ import time
 from geojson import MultiPoint
 
 WORKING_DIR='/usr/src/app/'
-CSV_DIR = WORKING_DIR + 'csv/'
-HTML_DIR = WORKING_DIR + 'html/'
 
 config = configparser.ConfigParser()
 config.read(WORKING_DIR + 'config.ini')
 
 XML_DIR = WORKING_DIR + str(config['DEFAULT']['xml_dir'])
+CSV_DIR = WORKING_DIR + str(config['DEFAULT']['csv_dir'])
+HTML_DIR = WORKING_DIR + str(config['DEFAULT']['html_dir'])
 logging.basicConfig(filename=WORKING_DIR + 'extractLattes.log', filemode='w', format='%(asctime)s %(name)s - %(levelname)s - %(message)s',level=logging.ERROR)
 
 def tituloConcluido(formacao,titulo):
@@ -108,11 +108,14 @@ class Score(object):
     def __getLatLon(self,instituicao):
         continuar = str(config['DEFAULT']['localizacoes']).upper()
         if (continuar=="SIM"):
-            requisicao = json.loads(requests.get("https://nominatim.openstreetmap.org/search.php?q=" + instituicao + "&format=json").text)
-            time.sleep(1)
+            #requisicao = json.loads(requests.get("https://nominatim.openstreetmap.org/search.php?q=" + instituicao + "&format=json").text)
+            requisicao = json.loads(requests.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" + instituicao + ".json?access_token=pk.eyJ1IjoicmFmYWVscGVyYXp6byIsImEiOiJja2ZxcjZ0Z2IwY2FwMnlueWx2ODJuNjBjIn0.V0-g5TeloF0y8XDCzyIm-A").text)
+            #time.sleep(1)
             try:
-                latitude = requisicao[0]['lat']
-                longitude = requisicao[0]['lon']
+                #latitude = requisicao[0]['lat']
+                #longitude = requisicao[0]['lon']
+                longitude = requisicao['features'][0]['geometry']['coordinates'][0]
+                latitude = requisicao['features'][0]['geometry']['coordinates'][1]
                 if (float(longitude),float(latitude)) not in self.__localizacoes:
                     self.__localizacoes.append((float(longitude),float(latitude)))
             except IndexError:
@@ -329,6 +332,7 @@ class Score(object):
                     continue
                 if livro.find('DETALHAMENTO-DO-LIVRO').attrib['NUMERO-DE-PAGINAS'] == "":
                     continue
+                paginas = 0
                 try:
                     paginas = int(livro.find('DETALHAMENTO-DO-LIVRO').attrib['NUMERO-DE-PAGINAS'])
                 except ValueError:
@@ -357,7 +361,6 @@ class Score(object):
                 editora = str(capitulo.find('DETALHAMENTO-DO-CAPITULO').attrib['NOME-DA-EDITORA'])
                 isbn = str(capitulo.find('DETALHAMENTO-DO-CAPITULO').attrib['ISBN'])
                 titulo_livro = str(capitulo.find('DETALHAMENTO-DO-CAPITULO').attrib['TITULO-DO-LIVRO'])
-                linha = [tipo,ano,titulo,paginas,editora,isbn,titulo_livro]
                 linha = [tipo,ano,self.__nome_completo,self.__numero_identificador,titulo,titulo_livro,isbn,"N/A","N/A","N/A"]
                 self.__writer.writerow(linha)
         

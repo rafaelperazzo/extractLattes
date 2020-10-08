@@ -11,12 +11,14 @@
 * configuração do arquivo config.ini (exemplo):
 
 ```
-    [DEFAULT]
-    inicio = 2013
-    fim = 2020
-    prefixo = DOCENTES_
-    xml_dir = xml/
-    localizacoes = SIM
+[DEFAULT]
+inicio = 2013
+fim = 2020
+prefixo = UFCA_
+xml_dir = xml/docentes/
+csv_dir = csv/docentes/
+html_dir = html/docentes/
+localizacoes = NAO
 ```
 ## Saída
 
