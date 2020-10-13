@@ -400,10 +400,10 @@ class Score(object):
         self.__csv2sqlite(CSV_DIR + prefixo + "projetos.csv","projetos")
         self.__csv2sqlite(CSV_DIR + prefixo + "titulacao.csv","titulacao")
         self.__csv2sqlite(CSV_DIR + prefixo + "titulos.csv","titulos")
-        self.__csv2ajax(CSV_DIR + prefixo + "producao.csv",CSV_DIR + prefixo + "producao.txt")
-        self.__csv2ajax(CSV_DIR + prefixo + "projetos.csv",CSV_DIR + prefixo + "projetos.txt")
-        self.__csv2ajax(CSV_DIR + prefixo + "titulacao.csv",CSV_DIR + prefixo + "titulacao.txt")
-        self.__csv2ajax(CSV_DIR + prefixo + "titulos.csv",CSV_DIR + prefixo + "titulos.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "producao.csv",HTML_DIR + prefixo + "producao.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "projetos.csv",HTML_DIR + prefixo + "projetos.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "titulacao.csv",HTML_DIR + prefixo + "titulacao.txt")
+        self.__csv2ajax(CSV_DIR + prefixo + "titulos.csv",HTML_DIR + prefixo + "titulos.txt")
 
     def salvarLocalizacoes(self):
         prefixo = str(config['DEFAULT']['prefixo'])
