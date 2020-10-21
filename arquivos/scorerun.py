@@ -47,6 +47,8 @@ config.read(WORKING_DIR + 'config.ini')
 XML_DIR = WORKING_DIR + str(config['DEFAULT']['xml_dir'])
 CSV_DIR = WORKING_DIR + str(config['DEFAULT']['csv_dir'])
 HTML_DIR = WORKING_DIR + str(config['DEFAULT']['html_dir'])
+MAPBOX_TOKEN = str(config['DEFAULT']['mapbox'])
+
 logging.basicConfig(filename=WORKING_DIR + 'extractLattes.log', filemode='w', format='%(asctime)s %(name)s - %(levelname)s - %(message)s',level=logging.ERROR)
 
 def tituloConcluido(formacao,titulo):
@@ -109,7 +111,7 @@ class Score(object):
         continuar = str(config['DEFAULT']['localizacoes']).upper()
         if (continuar=="SIM"):
             #requisicao = json.loads(requests.get("https://nominatim.openstreetmap.org/search.php?q=" + instituicao + "&format=json").text)
-            requisicao = json.loads(requests.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" + instituicao + ".json?access_token=pk.eyJ1IjoicmFmYWVscGVyYXp6byIsImEiOiJja2ZxcjZ0Z2IwY2FwMnlueWx2ODJuNjBjIn0.V0-g5TeloF0y8XDCzyIm-A").text)
+            requisicao = json.loads(requests.get("https://api.mapbox.com/geocoding/v5/mapbox.places/" + instituicao + ".json?access_token=" + MAPBOX_TOKEN).text)
             #time.sleep(1)
             try:
                 #latitude = requisicao[0]['lat']
