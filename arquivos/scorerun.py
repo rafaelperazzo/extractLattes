@@ -66,16 +66,16 @@ class Score(object):
         # Período considerado para avaliação
         prefixo = str(config['DEFAULT']['prefixo'])
         self.__arquivo = open(CSV_DIR + prefixo + "producao.csv","w")
-        self.__writer = csv.writer(self.__arquivo) #PRODUCAO
+        self.__writer = csv.writer(self.__arquivo,delimiter=';') #PRODUCAO
         self.__writer.writerow(['tipo','ano','autor','idlattes','titulo','local','identificador','natureza','abrangencia','editora'])
         self.__arquivoProjetos = open(CSV_DIR + prefixo + "projetos.csv","w")
-        self.__writerProjetos = csv.writer(self.__arquivoProjetos) #projetos
+        self.__writerProjetos = csv.writer(self.__arquivoProjetos,delimiter=';') #projetos
         self.__writerProjetos.writerow(['tipo','natureza','autor','idlattes','inicio','fim','titulo','graduacao','fomento'])
         self.__arquivoTitulacao = open(CSV_DIR + prefixo + "titulacao.csv","w")
-        self.__writerTitulacao = csv.writer(self.__arquivoTitulacao) #titulacao
+        self.__writerTitulacao = csv.writer(self.__arquivoTitulacao,delimiter=';') #titulacao
         self.__writerTitulacao.writerow(['idlattes','nome','graduacao','especializacao','mestrado_profissional','mestrado','doutorado','posdoutorado'])
         self.__arquivoTitulos = open(CSV_DIR + prefixo + "titulos.csv","w")
-        self.__writerTitulos = csv.writer(self.__arquivoTitulos) #titulacao
+        self.__writerTitulos = csv.writer(self.__arquivoTitulos,delimiter=';') #titulacao
         self.__writerTitulos.writerow(['tipo','nome','inicio','termino','titulo','instituicao','status'])
         self.__numero_identificador = ''
         self.__nome_completo = ''
