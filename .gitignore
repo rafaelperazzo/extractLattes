@@ -1,10 +1,10 @@
 *.xml
 *.log
 *.csv
-*.sh
 *.json
 *.txt
 html/*
 *.sqlite3
 *.zip
 *.ini
+upload.sh
