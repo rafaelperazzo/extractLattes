@@ -93,6 +93,7 @@ class Score(object):
                 self.__curriculo = root
                 nome = "INDEFINIDO"
                 try:
+                    #self.__csv2sqlite("qualis-periodicos-2017.csv","qualis")
                     self.__dados_gerais()
                     nome = self.__nome_completo
                     self.__formacao_academica_titulacao()
@@ -301,7 +302,6 @@ class Score(object):
                 self.__writer.writerow(linha)
         
             
-    
     def __trabalhos_em_eventos(self, producao):
         trabalhos = producao.find('TRABALHOS-EM-EVENTOS')
         if trabalhos is None:
@@ -374,7 +374,7 @@ class Score(object):
         self.__arquivoTitulacao.close()
 
     def __csv2sqlite(self,arquivo,tabela):
-        df = pd.read_csv(arquivo)
+        df = pd.read_csv(arquivo,sep=';')
         conn = sqlite3.connect(CSV_DIR + 'extractLattes.sqlite3')
         df.to_sql(tabela, conn, if_exists='replace', index = False)
         conn.close()
@@ -398,15 +398,23 @@ class Score(object):
 
     def exportar(self):
         prefixo = str(config['DEFAULT']['prefixo'])
-        self.__csv2sqlite(CSV_DIR + prefixo + "producao.csv","producao")
-        self.__csv2sqlite(CSV_DIR + prefixo + "projetos.csv","projetos")
-        self.__csv2sqlite(CSV_DIR + prefixo + "titulacao.csv","titulacao")
-        self.__csv2sqlite(CSV_DIR + prefixo + "titulos.csv","titulos")
-        self.__csv2ajax(CSV_DIR + prefixo + "producao.csv",HTML_DIR + prefixo + "producao.txt")
-        self.__csv2ajax(CSV_DIR + prefixo + "projetos.csv",HTML_DIR + prefixo + "projetos.txt")
-        self.__csv2ajax(CSV_DIR + prefixo + "titulacao.csv",HTML_DIR + prefixo + "titulacao.txt")
-        self.__csv2ajax(CSV_DIR + prefixo + "titulos.csv",HTML_DIR + prefixo + "titulos.txt")
-
+        try:
+            self.__csv2sqlite(CSV_DIR + prefixo + "producao.csv","producao")
+            self.__csv2sqlite(CSV_DIR + prefixo + "projetos.csv","projetos")
+            self.__csv2sqlite(CSV_DIR + prefixo + "titulacao.csv","titulacao")
+            self.__csv2sqlite(CSV_DIR + prefixo + "titulos.csv","titulos")
+        except Exception as e:
+            print(str(e))
+            print("Erro exportando para sqlite")
+        try:
+            self.__csv2ajax(CSV_DIR + prefixo + "producao.csv",HTML_DIR + prefixo + "producao.txt")
+            self.__csv2ajax(CSV_DIR + prefixo + "projetos.csv",HTML_DIR + prefixo + "projetos.txt")
+            self.__csv2ajax(CSV_DIR + prefixo + "titulacao.csv",HTML_DIR + prefixo + "titulacao.txt")
+            self.__csv2ajax(CSV_DIR + prefixo + "titulos.csv",HTML_DIR + prefixo + "titulos.txt")
+        except Exception as e:
+            print(str(e))
+            print("Erro exportando para ajax")
+        
     def salvarLocalizacoes(self):
         prefixo = str(config['DEFAULT']['prefixo'])
         continuar = str(config['DEFAULT']['localizacoes']).upper()
